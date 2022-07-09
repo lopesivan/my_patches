@@ -1,10 +1,10 @@
-From 560ec721ac70154d1a2ed3a7835fef079a63e240 Mon Sep 17 00:00:00 2001
+From 9d2b9564ec883f47687aa427debbcb7dfa2c56a7 Mon Sep 17 00:00:00 2001
 From: Ivan Lopes <lopesivan.ufrj@gmail.com>
-Date: Sat, 9 Jul 2022 19:56:34 -0300
-Subject: [PATCH] custom bash-it
+Date: Sat, 9 Jul 2022 20:32:56 -0300
+Subject: [PATCH] customize bash-it
 
 ---
- .gitignore                                    |   24 -
+ .gitignore                                    |    6 -
  aliases/available/ag.aliases.bash             |    2 +-
  aliases/available/ansible.aliases.bash        |    2 +-
  aliases/available/apt.aliases.bash            |    6 +-
@@ -84,47 +84,6 @@ Subject: [PATCH] custom bash-it
  custom/mpv-shot0004.jpg                       |  Bin 0 -> 128500 bytes
  custom/tp.bash                                |   35 +
  custom/xfile.bash                             |    9 +
- enabled/150---developer.aliases.bash          |    1 +
- enabled/150---general.aliases.bash            |    1 +
- enabled/150---mutt.aliases.bash               |    1 +
- enabled/150---redis.aliases.bash              |    1 +
- enabled/150---tmux.aliases.bash               |    1 +
- enabled/150---vim.aliases.bash                |    1 +
- enabled/150---wine.aliases.bash               |    1 +
- enabled/150---xclip.aliases.bash              |    1 +
- enabled/250---android.plugin.bash             |    1 +
- enabled/250---arduino.plugin.bash             |    1 +
- enabled/250---brew.plugin.bash                |    1 +
- enabled/250---dart.plugin.bash                |    1 +
- enabled/250---ghcup.plugin.bash               |    1 +
- enabled/250---gradle.plugin.bash              |    1 +
- enabled/250---groovy.plugin.bash              |    1 +
- enabled/250---jbang.plugin.bash               |    1 +
- enabled/250---jenv.plugin.bash                |    1 +
- enabled/250---luaenv.plugin.bash              |    1 +
- enabled/250---ndenv.plugin.bash               |    1 +
- enabled/250---pandoc.plugin.bash              |    1 +
- enabled/250---perl5.plugin.bash               |    1 +
- enabled/250---pyenv.plugin.bash               |    1 +
- enabled/250---rakudobrew.plugin.bash          |    1 +
- enabled/250---rbenv.plugin.bash               |    1 +
- enabled/250---roo.plugin.bash                 |    1 +
- enabled/250---rustup.plugin.bash              |    1 +
- enabled/260---goenv.plugin.bash               |    1 +
- enabled/350---bash-it.completion.bash         |    1 +
- enabled/350---cargo.completion.bash           |    1 +
- enabled/350---cht.completion.bash             |    1 +
- enabled/350---docker-compose.completion.bash  |    1 +
- enabled/350---docker-machine.completion.bash  |    1 +
- enabled/350---git_flow.completion.bash        |    1 +
- enabled/350---github-cli.completion.bash      |    1 +
- enabled/350---iprj.completion.bash            |    1 +
- enabled/350---tldr.completion.bash            |    1 +
- enabled/350---tmuxinator.completion.bash      |    1 +
- enabled/350---ttjava.completion.bash          |    1 +
- enabled/350---wd.completion.bash              |    1 +
- enabled/350---xp.completion.bash              |    1 +
- enabled/375---brew.completion.bash            |    1 +
  .../available/alias-completion.plugin.bash    |  106 +-
  plugins/available/android.plugin.bash         |   12 +
  plugins/available/arduino.plugin.bash         |   18 +
@@ -199,8 +158,7 @@ Subject: [PATCH] custom bash-it
  themes/powerline/powerline.base.bash          |   37 +-
  themes/pure/pure.theme.bash                   |   42 +-
  themes/purity/purity.theme.bash               |   46 +-
- 195 files changed, 5870 insertions(+), 2695 deletions(-)
- delete mode 100644 .gitignore
+ 154 files changed, 5829 insertions(+), 2677 deletions(-)
  create mode 100644 aliases/available/developer.aliases.bash
  create mode 100644 aliases/available/mutt.aliases.bash
  create mode 100644 aliases/available/redis.aliases.bash
@@ -224,47 +182,6 @@ Subject: [PATCH] custom bash-it
  create mode 100644 custom/mpv-shot0004.jpg
  create mode 100644 custom/tp.bash
  create mode 100644 custom/xfile.bash
- create mode 120000 enabled/150---developer.aliases.bash
- create mode 120000 enabled/150---general.aliases.bash
- create mode 120000 enabled/150---mutt.aliases.bash
- create mode 120000 enabled/150---redis.aliases.bash
- create mode 120000 enabled/150---tmux.aliases.bash
- create mode 120000 enabled/150---vim.aliases.bash
- create mode 120000 enabled/150---wine.aliases.bash
- create mode 120000 enabled/150---xclip.aliases.bash
- create mode 120000 enabled/250---android.plugin.bash
- create mode 120000 enabled/250---arduino.plugin.bash
- create mode 120000 enabled/250---brew.plugin.bash
- create mode 120000 enabled/250---dart.plugin.bash
- create mode 120000 enabled/250---ghcup.plugin.bash
- create mode 120000 enabled/250---gradle.plugin.bash
- create mode 120000 enabled/250---groovy.plugin.bash
- create mode 120000 enabled/250---jbang.plugin.bash
- create mode 120000 enabled/250---jenv.plugin.bash
- create mode 120000 enabled/250---luaenv.plugin.bash
- create mode 120000 enabled/250---ndenv.plugin.bash
- create mode 120000 enabled/250---pandoc.plugin.bash
- create mode 120000 enabled/250---perl5.plugin.bash
- create mode 120000 enabled/250---pyenv.plugin.bash
- create mode 120000 enabled/250---rakudobrew.plugin.bash
- create mode 120000 enabled/250---rbenv.plugin.bash
- create mode 120000 enabled/250---roo.plugin.bash
- create mode 120000 enabled/250---rustup.plugin.bash
- create mode 120000 enabled/260---goenv.plugin.bash
- create mode 120000 enabled/350---bash-it.completion.bash
- create mode 120000 enabled/350---cargo.completion.bash
- create mode 120000 enabled/350---cht.completion.bash
- create mode 120000 enabled/350---docker-compose.completion.bash
- create mode 120000 enabled/350---docker-machine.completion.bash
- create mode 120000 enabled/350---git_flow.completion.bash
- create mode 120000 enabled/350---github-cli.completion.bash
- create mode 120000 enabled/350---iprj.completion.bash
- create mode 120000 enabled/350---tldr.completion.bash
- create mode 120000 enabled/350---tmuxinator.completion.bash
- create mode 120000 enabled/350---ttjava.completion.bash
- create mode 120000 enabled/350---wd.completion.bash
- create mode 120000 enabled/350---xp.completion.bash
- create mode 120000 enabled/375---brew.completion.bash
  create mode 100644 plugins/available/android.plugin.bash
  create mode 100644 plugins/available/arduino.plugin.bash
  create mode 100644 plugins/available/bangsh.plugin.bash
@@ -287,35 +204,23 @@ Subject: [PATCH] custom bash-it
  create mode 100644 themes/command_duration.theme.bash
 
 diff --git a/.gitignore b/.gitignore
-deleted file mode 100644
-index 8e6f12a1..00000000
+index 8e6f12a1..9f3a6c70 100644
 --- a/.gitignore
-+++ /dev/null
-@@ -1,24 +0,0 @@
--.atom-build.json
++++ b/.gitignore
+@@ -1,13 +1,7 @@
+ .atom-build.json
 -*/enabled/*
--.DS_Store
+ .DS_Store
 -custom/*
--!custom/example.bash
--.rvmrc
+ !custom/example.bash
+ .rvmrc
 -aliases/custom.aliases.bash
 -completion/custom.completion.bash
 -lib/custom.bash
 -plugins/custom.plugins.bash
--*.swp
--.*.un~
--bats
--.idea
--*.sublime-workspace
--*.sublime-project
--enabled/*
--/enabled
--tmp/
--
--# Do not save profiles
--profiles/*
--# apart from the default one
--!profiles/default.bash_it
+ *.swp
+ .*.un~
+ bats
 diff --git a/aliases/available/ag.aliases.bash b/aliases/available/ag.aliases.bash
 index 7f9af7da..e3157f94 100644
 --- a/aliases/available/ag.aliases.bash
@@ -13734,334 +13639,6 @@ index 00000000..13c2d263
 +
 +  nohup nautilus --no-desktop $1 >/dev/null 2>&1
 +}
-diff --git a/enabled/150---developer.aliases.bash b/enabled/150---developer.aliases.bash
-new file mode 120000
-index 00000000..3fcc5acc
---- /dev/null
-+++ b/enabled/150---developer.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/developer.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---general.aliases.bash b/enabled/150---general.aliases.bash
-new file mode 120000
-index 00000000..1e901e50
---- /dev/null
-+++ b/enabled/150---general.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/general.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---mutt.aliases.bash b/enabled/150---mutt.aliases.bash
-new file mode 120000
-index 00000000..12e039a6
---- /dev/null
-+++ b/enabled/150---mutt.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/mutt.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---redis.aliases.bash b/enabled/150---redis.aliases.bash
-new file mode 120000
-index 00000000..d41f4253
---- /dev/null
-+++ b/enabled/150---redis.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/redis.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---tmux.aliases.bash b/enabled/150---tmux.aliases.bash
-new file mode 120000
-index 00000000..15d45618
---- /dev/null
-+++ b/enabled/150---tmux.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/tmux.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---vim.aliases.bash b/enabled/150---vim.aliases.bash
-new file mode 120000
-index 00000000..9633ba7c
---- /dev/null
-+++ b/enabled/150---vim.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/vim.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---wine.aliases.bash b/enabled/150---wine.aliases.bash
-new file mode 120000
-index 00000000..b9c3d907
---- /dev/null
-+++ b/enabled/150---wine.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/wine.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/150---xclip.aliases.bash b/enabled/150---xclip.aliases.bash
-new file mode 120000
-index 00000000..df5301aa
---- /dev/null
-+++ b/enabled/150---xclip.aliases.bash
-@@ -0,0 +1 @@
-+../aliases/available/xclip.aliases.bash
-\ No newline at end of file
-diff --git a/enabled/250---android.plugin.bash b/enabled/250---android.plugin.bash
-new file mode 120000
-index 00000000..5cbd0a6c
---- /dev/null
-+++ b/enabled/250---android.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/android.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---arduino.plugin.bash b/enabled/250---arduino.plugin.bash
-new file mode 120000
-index 00000000..89873521
---- /dev/null
-+++ b/enabled/250---arduino.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/arduino.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---brew.plugin.bash b/enabled/250---brew.plugin.bash
-new file mode 120000
-index 00000000..03d46380
---- /dev/null
-+++ b/enabled/250---brew.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/brew.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---dart.plugin.bash b/enabled/250---dart.plugin.bash
-new file mode 120000
-index 00000000..232d4d71
---- /dev/null
-+++ b/enabled/250---dart.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/dart.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---ghcup.plugin.bash b/enabled/250---ghcup.plugin.bash
-new file mode 120000
-index 00000000..ebdb2c83
---- /dev/null
-+++ b/enabled/250---ghcup.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/ghcup.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---gradle.plugin.bash b/enabled/250---gradle.plugin.bash
-new file mode 120000
-index 00000000..2e54c6bc
---- /dev/null
-+++ b/enabled/250---gradle.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/gradle.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---groovy.plugin.bash b/enabled/250---groovy.plugin.bash
-new file mode 120000
-index 00000000..dadb45cf
---- /dev/null
-+++ b/enabled/250---groovy.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/groovy.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---jbang.plugin.bash b/enabled/250---jbang.plugin.bash
-new file mode 120000
-index 00000000..ce3c83c5
---- /dev/null
-+++ b/enabled/250---jbang.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/jbang.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---jenv.plugin.bash b/enabled/250---jenv.plugin.bash
-new file mode 120000
-index 00000000..bf33db19
---- /dev/null
-+++ b/enabled/250---jenv.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/jenv.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---luaenv.plugin.bash b/enabled/250---luaenv.plugin.bash
-new file mode 120000
-index 00000000..b4c6b68f
---- /dev/null
-+++ b/enabled/250---luaenv.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/luaenv.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---ndenv.plugin.bash b/enabled/250---ndenv.plugin.bash
-new file mode 120000
-index 00000000..42937ad5
---- /dev/null
-+++ b/enabled/250---ndenv.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/ndenv.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---pandoc.plugin.bash b/enabled/250---pandoc.plugin.bash
-new file mode 120000
-index 00000000..c9281b10
---- /dev/null
-+++ b/enabled/250---pandoc.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/pandoc.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---perl5.plugin.bash b/enabled/250---perl5.plugin.bash
-new file mode 120000
-index 00000000..b970251c
---- /dev/null
-+++ b/enabled/250---perl5.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/perl5.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---pyenv.plugin.bash b/enabled/250---pyenv.plugin.bash
-new file mode 120000
-index 00000000..7dbc6937
---- /dev/null
-+++ b/enabled/250---pyenv.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/pyenv.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---rakudobrew.plugin.bash b/enabled/250---rakudobrew.plugin.bash
-new file mode 120000
-index 00000000..74bb3e42
---- /dev/null
-+++ b/enabled/250---rakudobrew.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/rakudobrew.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---rbenv.plugin.bash b/enabled/250---rbenv.plugin.bash
-new file mode 120000
-index 00000000..b3d6b9af
---- /dev/null
-+++ b/enabled/250---rbenv.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/rbenv.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---roo.plugin.bash b/enabled/250---roo.plugin.bash
-new file mode 120000
-index 00000000..d9c3dd48
---- /dev/null
-+++ b/enabled/250---roo.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/roo.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/250---rustup.plugin.bash b/enabled/250---rustup.plugin.bash
-new file mode 120000
-index 00000000..acff7118
---- /dev/null
-+++ b/enabled/250---rustup.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/rustup.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/260---goenv.plugin.bash b/enabled/260---goenv.plugin.bash
-new file mode 120000
-index 00000000..bc718255
---- /dev/null
-+++ b/enabled/260---goenv.plugin.bash
-@@ -0,0 +1 @@
-+../plugins/available/goenv.plugin.bash
-\ No newline at end of file
-diff --git a/enabled/350---bash-it.completion.bash b/enabled/350---bash-it.completion.bash
-new file mode 120000
-index 00000000..9a530bc1
---- /dev/null
-+++ b/enabled/350---bash-it.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/bash-it.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---cargo.completion.bash b/enabled/350---cargo.completion.bash
-new file mode 120000
-index 00000000..121e7c10
---- /dev/null
-+++ b/enabled/350---cargo.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/cargo.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---cht.completion.bash b/enabled/350---cht.completion.bash
-new file mode 120000
-index 00000000..d8c3e9f7
---- /dev/null
-+++ b/enabled/350---cht.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/cht.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---docker-compose.completion.bash b/enabled/350---docker-compose.completion.bash
-new file mode 120000
-index 00000000..5447cc0e
---- /dev/null
-+++ b/enabled/350---docker-compose.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/docker-compose.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---docker-machine.completion.bash b/enabled/350---docker-machine.completion.bash
-new file mode 120000
-index 00000000..c19ac1f3
---- /dev/null
-+++ b/enabled/350---docker-machine.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/docker-machine.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---git_flow.completion.bash b/enabled/350---git_flow.completion.bash
-new file mode 120000
-index 00000000..e3068703
---- /dev/null
-+++ b/enabled/350---git_flow.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/git_flow.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---github-cli.completion.bash b/enabled/350---github-cli.completion.bash
-new file mode 120000
-index 00000000..ba934e86
---- /dev/null
-+++ b/enabled/350---github-cli.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/github-cli.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---iprj.completion.bash b/enabled/350---iprj.completion.bash
-new file mode 120000
-index 00000000..0fad1e17
---- /dev/null
-+++ b/enabled/350---iprj.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/iprj.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---tldr.completion.bash b/enabled/350---tldr.completion.bash
-new file mode 120000
-index 00000000..a7ee8188
---- /dev/null
-+++ b/enabled/350---tldr.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/tldr.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---tmuxinator.completion.bash b/enabled/350---tmuxinator.completion.bash
-new file mode 120000
-index 00000000..3dc1d9f3
---- /dev/null
-+++ b/enabled/350---tmuxinator.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/tmuxinator.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---ttjava.completion.bash b/enabled/350---ttjava.completion.bash
-new file mode 120000
-index 00000000..82798a30
---- /dev/null
-+++ b/enabled/350---ttjava.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/ttjava.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---wd.completion.bash b/enabled/350---wd.completion.bash
-new file mode 120000
-index 00000000..92ff3427
---- /dev/null
-+++ b/enabled/350---wd.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/wd.completion.bash
-\ No newline at end of file
-diff --git a/enabled/350---xp.completion.bash b/enabled/350---xp.completion.bash
-new file mode 120000
-index 00000000..6cc6c51c
---- /dev/null
-+++ b/enabled/350---xp.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/xp.completion.bash
-\ No newline at end of file
-diff --git a/enabled/375---brew.completion.bash b/enabled/375---brew.completion.bash
-new file mode 120000
-index 00000000..fe8dc395
---- /dev/null
-+++ b/enabled/375---brew.completion.bash
-@@ -0,0 +1 @@
-+../completion/available/brew.completion.bash
-\ No newline at end of file
 diff --git a/plugins/available/alias-completion.plugin.bash b/plugins/available/alias-completion.plugin.bash
 index d23779f7..eb368d93 100644
 --- a/plugins/available/alias-completion.plugin.bash
