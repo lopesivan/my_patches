@@ -1,0 +1,44 @@
+From 49f417b0f060df234c1c41f2fcd05fc9ed7627fb Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Thu, 2 Jun 2022 20:31:41 -0300
+Subject: [PATCH] =?UTF-8?q?mudando=20a=20obten=C3=A7=C3=A3o=20da=20vari?=
+ =?UTF-8?q?=C3=A1vel=20=5FBANG=5FPATH?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ bang | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
+
+diff --git a/bang b/bang
+index 4b92c4c..6d3274d 100755
+--- a/bang
++++ b/bang
+@@ -1,22 +1,6 @@
+ #!/usr/bin/env bash
+ 
+-_BANG_PATH=$(
+-  if [ -n "$BANG_SRC_PATH" ]; then
+-    # If there is a src path stablished, then use it
+-    echo "$BANG_SRC_PATH"
+-  else
+-    # otherwise, lookup for the current directory
+-    BIN_PATH="$0"
+-    if [ -L "$BIN_PATH" ]; then
+-      BIN_PATH=$(readlink "$BIN_PATH")
+-    fi
+-    (
+-      cd $(dirname "$BIN_PATH") > /dev/null
+-      echo -n "$PWD"
+-    )
+-  fi
+-)
+-
++_BANG_PATH=__BANG_PATH__
+ . "$_BANG_PATH/boot.sh"
+ b._load_bang_env "$_BANG_PATH"
+ b._run "$@"
+-- 
+2.36.1
+
