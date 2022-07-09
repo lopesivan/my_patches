@@ -21,4 +21,9 @@ git format-patch --stdout HEAD^ >  ../st-$(git log -n1 --format=format:"%s"| tr 
 git checkout master
 git branch -D doing
 ```
+### Sum
+```
+sha256sum bash-it-my_local_changes-20220709-9a500059.diff
+a7ef77531453232c4288b1bf81e00845d953efae88642ac7b2c36398f9f9a52b  bash-it-my_local_changes-20220709-9a500059.diff
+```
 
