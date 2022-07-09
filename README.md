@@ -27,8 +27,9 @@ sha256sum bash-it-my_local_changes-20220709-9a500059.diff
 a7ef77531453232c4288b1bf81e00845d953efae88642ac7b2c36398f9f9a52b  bash-it-my_local_changes-20220709-9a500059.diff
 
 
-for f in *.diff; do sha256sum $f |
-    sed 's@\(.\+\)  \(.\+\.diff\)@url "https://raw.githubusercontent.com/lopesivan/my_patches/main/bash-it/\2"\rsha256 "\1"@';
+for f in *.diff; do echo;
+    sha256sum $f |
+    sed 's@\(.\+\)  \(.\+\.diff\)@url "https://raw.githubusercontent.com/lopesivan/my_patches/main/bash-it/\2"\nsha256 "\1"@';
 done
 
 ```
