@@ -1,0 +1,99 @@
+From 82153c0cba26f6657883c68cdd759f3a7dbec521 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Wed, 20 Jul 2022 13:46:10 -0300
+Subject: [PATCH] Adicionando wrapper en shell script
+
+---
+ USAGE     | 33 +++++++++++++++++++++++++++++++++
+ ezored.sh | 39 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 72 insertions(+)
+ create mode 100644 USAGE
+ create mode 100755 ezored.sh
+
+diff --git a/USAGE b/USAGE
+new file mode 100644
+index 0000000..ea2b0e3
+--- /dev/null
++++ b/USAGE
+@@ -0,0 +1,33 @@
++here are 6 steps to start:
++
++1 - Clone reposity:
++
++
++git clone https://github.com/ezored/ezored.git
++2 - Enter on cloned folder:
++
++
++cd ezored
++3 - Install python requirements:
++
++
++pip install -r requirements.txt
++4 - Setup conan tool:
++
++
++python make.py conan setup
++5 - Setup glue code tool:
++
++
++python make.py gluecode setup
++6 - Now all commands are available. Run the following command to list all targets that you can build:
++
++
++python make.py target
++Example: If you are on Linux, you can build the linux target, if on macOS you can run macos target and if on Windows you can run windows.
++
++
++python make.py target linux prepare  
++python make.py target linux build  
++python make.py target linux package  
++python make.py target linux dist generate  
+diff --git a/ezored.sh b/ezored.sh
+new file mode 100755
+index 0000000..b5dbf83
+--- /dev/null
++++ b/ezored.sh
+@@ -0,0 +1,39 @@
++#!/usr/bin/env bash
++
++EZORED_HOME=$(brew --prefix)/opt/ezored
++
++__help__=0 # set OFF
++[ "$1" = '--help'  ] && { __help__=1; shift;  }
++[ "$1" = '-h'  ] && { __help__=1; shift;  }
++[ "$1" = '-h'  ] && { __help__=1; shift;  }
++[ "$1" = '--debug'  ] && { __debug__=1; shift;  }
++[ "$1" = '-d'  ] && { __debug__=1; shift;  }
++if [ $__help__ -eq 1 ]; then
++	#__help__ has value equal 1
++	#__help__ ON
++
++	echo 1>&2 "Ezored Home: $EZORED_HOME"
++    cat <<-EOF 1>&2
++python \${EZORED_HOME}/make.py target linux prepare
++python \${EZORED_HOME}/make.py target linux build
++python \${EZORED_HOME}/make.py target linux package
++python \${EZORED_HOME}/make.py target linux dist generate
++
++ezored target linux prepare
++ezored target linux build
++ezored target linux package
++ezored target linux dist generate
++EOF
++  echo 1>&2 Sintaxe: $0 in out
++  exit 1
++fi
++
++if [ $__debug__ -eq 1 ]; then
++	#__debug__ has value equal 1
++	#__debug__ ON
++    echo python ${EZORED_HOME}/make.py $@
++else
++    python ${EZORED_HOME}/make.py $@
++fi
++
++exit 0
+-- 
+2.37.1
+
