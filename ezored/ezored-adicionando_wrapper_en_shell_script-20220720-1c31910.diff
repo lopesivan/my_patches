@@ -1,12 +1,12 @@
-From 82153c0cba26f6657883c68cdd759f3a7dbec521 Mon Sep 17 00:00:00 2001
+From 1c319107d31fe0d921b4ea80f9d1015e7c1f22cd Mon Sep 17 00:00:00 2001
 From: Ivan Lopes <lopesivan.ufrj@gmail.com>
-Date: Wed, 20 Jul 2022 13:46:10 -0300
+Date: Wed, 20 Jul 2022 14:01:34 -0300
 Subject: [PATCH] Adicionando wrapper en shell script
 
 ---
  USAGE     | 33 +++++++++++++++++++++++++++++++++
- ezored.sh | 39 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 72 insertions(+)
+ ezored.sh | 40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+)
  create mode 100644 USAGE
  create mode 100755 ezored.sh
 
@@ -51,15 +51,16 @@ index 0000000..ea2b0e3
 +python make.py target linux dist generate  
 diff --git a/ezored.sh b/ezored.sh
 new file mode 100755
-index 0000000..b5dbf83
+index 0000000..c8e21bf
 --- /dev/null
 +++ b/ezored.sh
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,40 @@
 +#!/usr/bin/env bash
 +
 +EZORED_HOME=$(brew --prefix)/opt/ezored
 +
 +__help__=0 # set OFF
++__debug__=0 # set OFF
 +[ "$1" = '--help'  ] && { __help__=1; shift;  }
 +[ "$1" = '-h'  ] && { __help__=1; shift;  }
 +[ "$1" = '-h'  ] && { __help__=1; shift;  }
