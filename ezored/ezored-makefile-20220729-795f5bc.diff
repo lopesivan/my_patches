@@ -1,0 +1,38 @@
+From 795f5bc858be974de26c6a9b376b417c55dccbb0 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Fri, 29 Jul 2022 00:25:16 -0300
+Subject: [PATCH] Makefile
+
+---
+ Makefile | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+ create mode 100644 Makefile
+
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..38b0bfe
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,19 @@
++APP  = `brew --prefix`/opt/template-code/w-ezored-linux/w/v/app.py
++Y    = `brew --prefix`/opt/template-code/w-ezored-linux/w/u/1.yml
++YAML =  config.yml
++dir  = ./out
++
++all: view
++
++save:
++	python $(APP) -s -y $(YAML)
++view:
++	python $(APP) -p -y $(YAML)
++get-yaml:
++	cp $(Y) $(YAML)
++clean:
++	rm -rf ${dir}
++	make view 2>&1 |grep File:| sed 's/File: /rm /'
++#	ls | grep -vE '(Makefile|app.py|*.yml)' | xargs rm
++
++# END OF FILE
+-- 
+2.37.1
+
