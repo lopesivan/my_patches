@@ -1,0 +1,49 @@
+From 6d542b32b4a4f023171937592b38533b70833381 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Wed, 9 Aug 2023 02:34:09 -0300
+Subject: [PATCH] custom
+
+---
+ bash_profile | 4 ----
+ configure.sh | 4 +++-
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/bash_profile b/bash_profile
+index 5d03982..58b9435 100644
+--- a/bash_profile
++++ b/bash_profile
+@@ -1,9 +1,5 @@
+ #ulimit -n 4096
+ source "$HOME/.bashrc"
+ 
+-if [ -e /home/ivan/.nix-profile/etc/profile.d/nix.sh ]; then . /home/ivan/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+-
+ # opam configuration
+ test -r /home/ivan/.opam/opam-init/init.sh && . /home/ivan/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+-
+-test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+diff --git a/configure.sh b/configure.sh
+index 8e359cf..012c848 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -29,6 +29,8 @@
+ # ----------------------------------------------------------------------------
+ # Run!
+ 
++OPT=${HOME}/developer/bash-config
++
+ files=(
+   "bashrc"
+   "bash_logout"
+@@ -40,7 +42,7 @@ for f in ${files[*]}; do
+   test -L ~/.${f} &&
+     rm ${HOME}/.${f}
+ 
+-  ln -s ${HOME}/developer/bash-config/${f} ${HOME}/.${f}
++  ln -s ${OPT}/${f} ${HOME}/.${f}
+ done
+ 
+ # ----------------------------------------------------------------------------
+-- 
+2.41.0
+
