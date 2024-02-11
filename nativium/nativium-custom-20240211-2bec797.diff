@@ -1,0 +1,451 @@
+From 2bec79794a2960c084a903cc1897fd20a702550b Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Sun, 11 Feb 2024 01:32:06 -0300
+Subject: [PATCH] custom
+
+---
+ README.md                                     |  2 +-
+ apps/android/runner/app/build.gradle          | 45 +++++++++------
+ .../runner/app/nativium.dependency.gradle     |  5 +-
+ .../runner/app/src/main/AndroidManifest.xml   |  3 +-
+ apps/android/runner/build.gradle              |  4 +-
+ apps/android/runner/gradle.properties         | 16 +++---
+ .../gradle/wrapper/gradle-wrapper.properties  |  2 +-
+ bin/nativium                                  | 55 +++++++++++++++++++
+ conan/profiles/nativium_wasm_profile          |  2 +-
+ .../support/android-aar-project/build.gradle  |  4 ++
+ .../android-aar-project/gradle.properties     | 12 ++--
+ .../gradle/wrapper/gradle-wrapper.properties  |  2 +-
+ .../android-aar-project/library/build.gradle  | 35 +++++-------
+ .../library/src/main/AndroidManifest.xml      |  2 +-
+ .../android-aar-project/settings.gradle       | 17 ++++++
+ targets/tests/config/target_conan.py          |  2 +-
+ 16 files changed, 142 insertions(+), 66 deletions(-)
+ create mode 100755 bin/nativium
+ create mode 100644 targets/android/support/android-aar-project/build.gradle
+ create mode 100644 targets/android/support/android-aar-project/settings.gradle
+
+diff --git a/README.md b/README.md
+index 1fed1cd..24e40a8 100644
+--- a/README.md
++++ b/README.md
+@@ -108,4 +108,4 @@ These projects were made using the Nativium architecture with a feature called `
+ 
+ [MIT](http://opensource.org/licenses/MIT)
+ 
+-Copyright (c) 2021-2022, Paulo Coutinho
++Copyright (c) 2021-2024, Paulo Coutinho
+diff --git a/apps/android/runner/app/build.gradle b/apps/android/runner/app/build.gradle
+index e088a70..033583b 100644
+--- a/apps/android/runner/app/build.gradle
++++ b/apps/android/runner/app/build.gradle
+@@ -1,7 +1,7 @@
+ plugins {
+     id "com.android.application"
+     id "kotlin-android"
+-    id "de.undercouch.download" version "5.3.0"
++    id "de.undercouch.download" version "5.5.0"
+ }
+ 
+ repositories {
+@@ -21,20 +21,26 @@ repositories {
+ }
+ 
+ android {
+-    compileSdkVersion 33
+-    flavorDimensions "default"
+-    buildToolsVersion "30.0.3"
+-    ndkVersion "24.0.8215888"
++    namespace 'com.nativium.app'
+ 
+     defaultConfig {
+-        applicationId 'com.nativium.app'
+-        minSdkVersion 16
+-        targetSdkVersion 33
++        buildToolsVersion = '34.0.0'
++
++        applicationId "com.nativium.app"
++
++        minSdk 16
++        targetSdk 34
++        compileSdk 34
++
+         versionCode 1
+-        versionName '1.0.0'
++        versionName "1.0.0"
++
++        ndkVersion "24.0.8215888"
++
++        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
++
+         multiDexEnabled true
+         vectorDrawables.useSupportLibrary = true
+-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+ 
+         ndk {
+             debugSymbolLevel 'full'
+@@ -46,6 +52,10 @@ android {
+         sourceCompatibility JavaVersion.VERSION_1_8
+     }
+ 
++    kotlinOptions {
++        jvmTarget = '1.8'
++    }
++
+     signingConfigs {
+         release {
+             keyAlias '[YOUR-KEY-ALIAS]'
+@@ -76,7 +86,6 @@ android {
+             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+         }
+     }
+-
+ }
+ 
+ dependencies {
+@@ -94,20 +103,20 @@ dependencies {
+ 
+     implementation 'androidx.appcompat:appcompat:1.6.1'
+     implementation 'androidx.multidex:multidex:2.0.1'
+-    implementation 'androidx.core:core-ktx:1.9.0'
++    implementation 'androidx.core:core-ktx:1.12.0'
+     implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
+     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
++    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+ 
+-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0'
++    implementation 'com.google.android.material:material:1.11.0'
+ 
+-    implementation 'com.google.android.material:material:1.8.0'
+-
+-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3'
+-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
++    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
++    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+ 
+     implementation 'com.google.android.instantapps:instantapps:1.1.0'
+ 
++    implementation(platform('org.jetbrains.kotlin:kotlin-bom:1.9.0'))
++
+     // test only
+     implementation 'androidx.test.ext:junit:1.1.5'
+     testImplementation 'junit:junit:4.13.2'
+diff --git a/apps/android/runner/app/nativium.dependency.gradle b/apps/android/runner/app/nativium.dependency.gradle
+index d9b6e4f..544ea00 100644
+--- a/apps/android/runner/app/nativium.dependency.gradle
++++ b/apps/android/runner/app/nativium.dependency.gradle
+@@ -7,7 +7,7 @@ if (gradle.ext.nativiumUseRemoteLibrary) {
+         fileURL = "https://nativium.s3.amazonaws.com/dist/android/${gradle.ext.nativiumLibraryVersion}/dist.tar.gz"
+     }
+ 
+-    task downloadNativiumLibraryFile(type: Download) {
++    tasks.register('downloadNativiumLibraryFile', Download) {
+         src fileURL
+         dest new File(gradle.ext.nativiumLibraryCacheDir, "nativium-library/library-${gradle.ext.nativiumLibraryVersion}.tar.gz")
+         tempAndMove true
+@@ -16,7 +16,8 @@ if (gradle.ext.nativiumUseRemoteLibrary) {
+         downloadTaskDir gradle.ext.nativiumLibraryCacheDir
+     }
+ 
+-    task getNativiumLibrary(dependsOn: downloadNativiumLibraryFile, type: Copy) {
++    tasks.register('getNativiumLibrary', Copy) {
++        dependsOn downloadNativiumLibraryFile
+         from tarTree(downloadNativiumLibraryFile.dest)
+         into new File(buildDir, "nativium-library")
+     }
+diff --git a/apps/android/runner/app/src/main/AndroidManifest.xml b/apps/android/runner/app/src/main/AndroidManifest.xml
+index 32c8ea6..75d758a 100644
+--- a/apps/android/runner/app/src/main/AndroidManifest.xml
++++ b/apps/android/runner/app/src/main/AndroidManifest.xml
+@@ -1,7 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:dist="http://schemas.android.com/apk/distribution"
+-    package="com.nativium.app">
++    xmlns:dist="http://schemas.android.com/apk/distribution">
+ 
+     <uses-permission android:name="android.permission.INTERNET" />
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+diff --git a/apps/android/runner/build.gradle b/apps/android/runner/build.gradle
+index 2a64892..fc4db71 100644
+--- a/apps/android/runner/build.gradle
++++ b/apps/android/runner/build.gradle
+@@ -7,8 +7,8 @@ buildscript {
+     }
+ 
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:7.4.1'
+-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0'
++        classpath 'com.android.tools.build:gradle:8.2.2'
++        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
+ 
+         // NOTE: Do not place your application dependencies here; they belong
+         // in the individual module build.gradle files
+diff --git a/apps/android/runner/gradle.properties b/apps/android/runner/gradle.properties
+index dbe0688..0f025bd 100644
+--- a/apps/android/runner/gradle.properties
++++ b/apps/android/runner/gradle.properties
+@@ -1,27 +1,25 @@
+ # Project-wide Gradle settings.
+-
+ # IDE (e.g. Android Studio) users:
+ # Gradle settings configured through the IDE *will override*
+ # any settings specified in this file.
+-
+ # For more details on how to configure your build environment visit
+ # http://www.gradle.org/docs/current/userguide/build_environment.html
+-
+ # Specifies the JVM arguments used for the daemon process.
+ # The setting is particularly useful for tweaking memory settings.
+-org.gradle.jvmargs=-Xmx1536m
+-
++org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+ # When configured, Gradle will run in incubating parallel mode.
+ # This option should only be used with decoupled projects. More details, visit
+ # http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
+ # org.gradle.parallel=true
+-
+ # AndroidX package structure to make it clearer which packages are bundled with the
+ # Android operating system, and which are packaged with your app's APK
+ # https://developer.android.com/topic/libraries/support-library/androidx-rn
+ android.useAndroidX=true
+-# Automatically convert third-party libraries to use AndroidX
+-android.enableJetifier=true
+-
+ # Kotlin code style for this project: "official" or "obsolete":
+ kotlin.code.style=official
++# Enables namespacing of each library's R class so that its R class includes only the
++# resources declared in the library itself and none from the library's dependencies,
++# thereby reducing the size of the R class for that library
++android.nonTransitiveRClass=true
++android.defaults.buildfeatures.buildconfig=true
++android.nonFinalResIds=false
+diff --git a/apps/android/runner/gradle/wrapper/gradle-wrapper.properties b/apps/android/runner/gradle/wrapper/gradle-wrapper.properties
+index 3c472b9..b5fc5a7 100644
+--- a/apps/android/runner/gradle/wrapper/gradle-wrapper.properties
++++ b/apps/android/runner/gradle/wrapper/gradle-wrapper.properties
+@@ -2,4 +2,4 @@ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-7.5-all.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-all.zip
+diff --git a/bin/nativium b/bin/nativium
+new file mode 100755
+index 0000000..bf58926
+--- /dev/null
++++ b/bin/nativium
+@@ -0,0 +1,55 @@
++#!/usr/bin/env bash
++
++NATIVIUM_HOME=$(brew --prefix)/opt/nativium
++
++__help__=0  # set OFF
++__debug__=0 # set OFF
++[ "$1" = '--help' ] && {
++    __help__=1
++    shift
++}
++[ "$1" = '-h' ] && {
++    __help__=1
++    shift
++}
++[ "$1" = '-h' ] && {
++    __help__=1
++    shift
++}
++[ "$1" = '--debug' ] && {
++    __debug__=1
++    shift
++}
++[ "$1" = '-d' ] && {
++    __debug__=1
++    shift
++}
++if [ $__help__ -eq 1 ]; then
++    #__help__ has value equal 1
++    #__help__ ON
++
++    echo 1>&2 "Ezored Home: $NATIVIUM_HOME"
++    cat <<-EOF 1>&2
++python \${NATIVIUM_HOME}/make.py target linux prepare
++python \${NATIVIUM_HOME}/make.py target linux build
++python \${NATIVIUM_HOME}/make.py target linux package
++python \${NATIVIUM_HOME}/make.py target linux dist generate
++
++nativium target linux prepare
++nativium target linux build
++nativium target linux package
++nativium target linux dist generate
++EOF
++    echo 1>&2 Sintaxe: $0 in out
++    exit 1
++fi
++
++if [ $__debug__ -eq 1 ]; then
++    #__debug__ has value equal 1
++    #__debug__ ON
++    echo python ${NATIVIUM_HOME}/nativium.py $@
++else
++    python ${NATIVIUM_HOME}/nativium.py $@
++fi
++
++exit 0
+diff --git a/conan/profiles/nativium_wasm_profile b/conan/profiles/nativium_wasm_profile
+index dd1e474..1dd4670 100644
+--- a/conan/profiles/nativium_wasm_profile
++++ b/conan/profiles/nativium_wasm_profile
+@@ -5,4 +5,4 @@ compiler=clang
+ compiler.version=16
+ 
+ [tool_requires]
+-emsdk/3.1.31
++emsdk/3.1.50
+diff --git a/targets/android/support/android-aar-project/build.gradle b/targets/android/support/android-aar-project/build.gradle
+new file mode 100644
+index 0000000..2cc3054
+--- /dev/null
++++ b/targets/android/support/android-aar-project/build.gradle
+@@ -0,0 +1,4 @@
++// Top-level build file where you can add configuration options common to all sub-projects/modules.
++plugins {
++    id 'com.android.library' version '8.2.2' apply false
++}
+diff --git a/targets/android/support/android-aar-project/gradle.properties b/targets/android/support/android-aar-project/gradle.properties
+index aac7c9b..1bc127c 100644
+--- a/targets/android/support/android-aar-project/gradle.properties
++++ b/targets/android/support/android-aar-project/gradle.properties
+@@ -1,17 +1,19 @@
+ # Project-wide Gradle settings.
+-
+ # IDE (e.g. Android Studio) users:
+ # Gradle settings configured through the IDE *will override*
+ # any settings specified in this file.
+-
+ # For more details on how to configure your build environment visit
+ # http://www.gradle.org/docs/current/userguide/build_environment.html
+-
+ # Specifies the JVM arguments used for the daemon process.
+ # The setting is particularly useful for tweaking memory settings.
+-org.gradle.jvmargs=-Xmx1536m
+-
++org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+ # When configured, Gradle will run in incubating parallel mode.
+ # This option should only be used with decoupled projects. More details, visit
+ # http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
+ # org.gradle.parallel=true
++# AndroidX package structure to make it clearer which packages are bundled with the
++# Android operating system, and which are packaged with your app's APK
++# https://developer.android.com/topic/libraries/support-library/androidx-rn
++android.useAndroidX=true
++# Kotlin code style for this project: "official" or "obsolete":
++kotlin.code.style=official
+diff --git a/targets/android/support/android-aar-project/gradle/wrapper/gradle-wrapper.properties b/targets/android/support/android-aar-project/gradle/wrapper/gradle-wrapper.properties
+index 3c472b9..15de902 100644
+--- a/targets/android/support/android-aar-project/gradle/wrapper/gradle-wrapper.properties
++++ b/targets/android/support/android-aar-project/gradle/wrapper/gradle-wrapper.properties
+@@ -1,5 +1,5 @@
+ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
++distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-7.5-all.zip
+diff --git a/targets/android/support/android-aar-project/library/build.gradle b/targets/android/support/android-aar-project/library/build.gradle
+index daa9e0f..0a9cb91 100644
+--- a/targets/android/support/android-aar-project/library/build.gradle
++++ b/targets/android/support/android-aar-project/library/build.gradle
+@@ -1,30 +1,18 @@
+-allprojects {
+-    repositories {
+-        google()
+-        mavenCentral()
+-    }
+-}
+-
+-buildscript {
+-    repositories {
+-        google()
+-        mavenCentral()
+-    }
+-    dependencies {
+-        classpath 'com.android.tools.build:gradle:7.4.1'
+-    }
++plugins {
++    id 'com.android.library'
+ }
+ 
+-apply plugin: 'com.android.library'
+-
+ android {
+-    compileSdkVersion 33
+-    buildToolsVersion "30.0.3"
+-    ndkVersion "24.0.8215888"
++    namespace 'com.ubook.library'
+ 
+     defaultConfig {
+-        minSdkVersion 16
+-        targetSdkVersion 33
++        buildToolsVersion = '34.0.0'
++        ndkVersion = "24.0.8215888"
++
++        minSdk 16
++        targetSdk 34
++        compileSdk 34
++
+         versionCode {VERSION_CODE}
+         versionName '{VERSION}'
+     }
+@@ -52,4 +40,7 @@ android {
+ 
+ dependencies {
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
++    implementation "androidx.annotation:annotation:1.7.1"
++    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
++    implementation "androidx.preference:preference:1.2.1"
+ }
+diff --git a/targets/android/support/android-aar-project/library/src/main/AndroidManifest.xml b/targets/android/support/android-aar-project/library/src/main/AndroidManifest.xml
+index 8d47e22..8072ee0 100644
+--- a/targets/android/support/android-aar-project/library/src/main/AndroidManifest.xml
++++ b/targets/android/support/android-aar-project/library/src/main/AndroidManifest.xml
+@@ -1,2 +1,2 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<manifest package="com.nativium.library" />
++<manifest />
+diff --git a/targets/android/support/android-aar-project/settings.gradle b/targets/android/support/android-aar-project/settings.gradle
+new file mode 100644
+index 0000000..fd12ffe
+--- /dev/null
++++ b/targets/android/support/android-aar-project/settings.gradle
+@@ -0,0 +1,17 @@
++pluginManagement {
++    repositories {
++        gradlePluginPortal()
++        google()
++        mavenCentral()
++    }
++}
++
++dependencyResolutionManagement {
++    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
++    repositories {
++        google()
++        mavenCentral()
++    }
++}
++
++include ':library'
+diff --git a/targets/tests/config/target_conan.py b/targets/tests/config/target_conan.py
+index 242ade2..cc53730 100644
+--- a/targets/tests/config/target_conan.py
++++ b/targets/tests/config/target_conan.py
+@@ -10,4 +10,4 @@ def configure(params={}):
+ def requirements(params={}):
+     conanfile: ConanFile = params["conanfile"]
+ 
+-    conanfile.requires("gtest/1.11.0")
++    conanfile.requires("gtest/1.14.0")
+-- 
+2.41.0
+
