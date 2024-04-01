@@ -1,0 +1,25 @@
+From 3be19e52339a70738bfccea5a9ffe6eb40a2a4ff Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Mon, 1 Apr 2024 11:56:45 -0300
+Subject: [PATCH] custom
+
+---
+ src/main.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/main.c b/src/main.c
+index b9f5d9d..8adf0f5 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -4,6 +4,8 @@
+ 
+ int main(int argc, char *argv[]) {
+   printf("Hello, world!\n");
++  printf("Hello, world!\n");
++  printf("Hello, world!\n");
+ 
+   return 0;
+ }
+-- 
+2.41.0
+
