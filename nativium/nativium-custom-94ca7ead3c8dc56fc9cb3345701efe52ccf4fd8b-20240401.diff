@@ -1,0 +1,74 @@
+From 94ca7ead3c8dc56fc9cb3345701efe52ccf4fd8b Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Mon, 1 Apr 2024 12:55:28 -0300
+Subject: [PATCH] custom
+
+---
+ bin/nativium | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+ create mode 100755 bin/nativium
+
+diff --git a/bin/nativium b/bin/nativium
+new file mode 100755
+index 0000000..bf58926
+--- /dev/null
++++ b/bin/nativium
+@@ -0,0 +1,55 @@
++#!/usr/bin/env bash
++
++NATIVIUM_HOME=$(brew --prefix)/opt/nativium
++
++__help__=0  # set OFF
++__debug__=0 # set OFF
++[ "$1" = '--help' ] && {
++    __help__=1
++    shift
++}
++[ "$1" = '-h' ] && {
++    __help__=1
++    shift
++}
++[ "$1" = '-h' ] && {
++    __help__=1
++    shift
++}
++[ "$1" = '--debug' ] && {
++    __debug__=1
++    shift
++}
++[ "$1" = '-d' ] && {
++    __debug__=1
++    shift
++}
++if [ $__help__ -eq 1 ]; then
++    #__help__ has value equal 1
++    #__help__ ON
++
++    echo 1>&2 "Ezored Home: $NATIVIUM_HOME"
++    cat <<-EOF 1>&2
++python \${NATIVIUM_HOME}/make.py target linux prepare
++python \${NATIVIUM_HOME}/make.py target linux build
++python \${NATIVIUM_HOME}/make.py target linux package
++python \${NATIVIUM_HOME}/make.py target linux dist generate
++
++nativium target linux prepare
++nativium target linux build
++nativium target linux package
++nativium target linux dist generate
++EOF
++    echo 1>&2 Sintaxe: $0 in out
++    exit 1
++fi
++
++if [ $__debug__ -eq 1 ]; then
++    #__debug__ has value equal 1
++    #__debug__ ON
++    echo python ${NATIVIUM_HOME}/nativium.py $@
++else
++    python ${NATIVIUM_HOME}/nativium.py $@
++fi
++
++exit 0
+-- 
+2.41.0
+
