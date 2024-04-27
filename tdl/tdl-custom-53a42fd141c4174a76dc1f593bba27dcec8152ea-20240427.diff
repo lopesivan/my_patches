@@ -1,0 +1,21 @@
+From 53a42fd141c4174a76dc1f593bba27dcec8152ea Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Sat, 27 Apr 2024 02:53:25 -0300
+Subject: [PATCH] custom
+
+---
+ INSTALL | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/INSTALL b/INSTALL
+index 84536ca..d6d3f8b 100644
+--- a/INSTALL
++++ b/INSTALL
+@@ -25,3 +25,4 @@ It's suggested that you try
+ 
+ as well.
+ 
++brew install tdl@42
+-- 
+2.41.0
+
