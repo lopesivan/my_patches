@@ -1,0 +1,20 @@
+From d40f0887c60b4dfac61c007893d09213ee01fe26 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Sat, 27 Apr 2024 02:17:25 -0300
+Subject: [PATCH] custom
+
+---
+ INSTALL | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 INSTALL
+
+diff --git a/INSTALL b/INSTALL
+new file mode 100644
+index 0000000..ce67527
+--- /dev/null
++++ b/INSTALL
+@@ -0,0 +1 @@
++brew install spill@42
+-- 
+2.41.0
+
