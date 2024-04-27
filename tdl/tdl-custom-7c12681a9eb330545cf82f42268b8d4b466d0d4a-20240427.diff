@@ -1,0 +1,35 @@
+From 7c12681a9eb330545cf82f42268b8d4b466d0d4a Mon Sep 17 00:00:00 2001
+From: "Richard P. Curnow" <rc@rc0.org.uk>
+Date: Sun, 7 Mar 2010 22:50:21 +0000
+Subject: [PATCH] Update email information and note about project being
+ unmaintained.
+
+---
+ README | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/README b/README
+index 72c545c..7509568 100644
+--- a/README
++++ b/README
+@@ -39,11 +39,14 @@ HOMEPAGE
+     http://www.rc0.org.uk/tdl/index.html
+ 
+ CONTACT
+-    The author is Richard P. Curnow.
+-    He can be contacted at either of
++    The original author is Richard P. Curnow.
++    He can be contacted at
+ 
+     rc@rc0.org.uk
+-    richard@rrbcurnow.freeuk.com
++
++    However, Richard is no longer actively maintaining tdl; in fact, he is no
++    longer even using it.  Any volunteers to take over maintenance are very
++    welcome to offer their services.
+ 
+ ACKNOWLEDGEMENTS
+ 
+-- 
+2.41.0
+
