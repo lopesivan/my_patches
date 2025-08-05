@@ -1,0 +1,35 @@
+From 3104e1876c087da58d4e36d02a03a7da5dc64f63 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Tue, 5 Aug 2025 07:19:35 -0300
+Subject: [PATCH] custom
+
+---
+ main.cpp | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+ create mode 100644 main.cpp
+
+diff --git a/main.cpp b/main.cpp
+new file mode 100644
+index 0000000..2e5fe1f
+--- /dev/null
++++ b/main.cpp
+@@ -0,0 +1,16 @@
++/* hello.cpp: A standard "Hello, world!" program */
++#include <iostream>
++
++using namespace std;
++
++//
++// main
++//
++
++int main()
++{
++    cout << "hello, world" << endl;
++
++    return 0; // success return
++}
++
+-- 
+2.50.1
+
