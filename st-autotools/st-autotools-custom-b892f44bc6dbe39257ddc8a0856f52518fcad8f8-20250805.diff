@@ -1,0 +1,37 @@
+From b892f44bc6dbe39257ddc8a0856f52518fcad8f8 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Tue, 5 Aug 2025 08:21:33 -0300
+Subject: [PATCH] custom
+
+---
+ Makefile.am | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 832d50f..9613aca 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,12 +1,12 @@
+-WARNINGCFLAGS    = -std=gnu99 -Wall -Wno-parentheses
+-AM_CFLAGS        = $(WARNINGCFLAGS)
++# WARNINGCFLAGS    = -std=gnu99 -Wall -Wno-parentheses
++# AM_CFLAGS        = $(WARNINGCFLAGS)
+ 
+-bin_PROGRAMS     = about
+-include_HEADERS  = config.h
+-about_SOURCES    = about.c
+-about_CFLAGS     =
+-about_LDFLAGS    =
+-#about_CFLAGS    = $(AM_CFLAGS)
++# bin_PROGRAMS     = about
++# include_HEADERS  = config.h
++# about_SOURCES    = about.c
++# about_CFLAGS     =
++# about_LDFLAGS    =
++# #about_CFLAGS    = $(AM_CFLAGS)
+ 
+ SUBDIRS = src
+ 
+-- 
+2.50.1
+
