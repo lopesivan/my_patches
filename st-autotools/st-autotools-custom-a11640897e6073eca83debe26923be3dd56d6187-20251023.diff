@@ -1,0 +1,35 @@
+From a11640897e6073eca83debe26923be3dd56d6187 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Thu, 23 Oct 2025 17:48:46 -0300
+Subject: [PATCH] custom
+
+---
+ src/Makefile.am | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 2b953d6..2cd5295 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -2,13 +2,16 @@ bin_PROGRAMS = st
+ 
+ st_SOURCES   = st.c x.c
+ 
++AM_CPPFLAGS = -I/usr/include/freetype2/freetype -I/usr/include/freetype2 -I/usr/include/libpng16
++AM_LDFLAGS  = -L/usr/lib/x86_64-linux-gnu -lfontconfig -lfreetype
++
+ # Use apenas as flags vindas do pkg-config
+ st_CFLAGS    = -I$(top_srcdir) \
+-               ${FREETYPE2_CFLAGS} ${FONTCONFIG_CFLAGS} \
++               ${AM_CPPFLAGS} \
+                -DVERSION=\"$(PACKAGE_VERSION)\" -D_XOPEN_SOURCE=600 -O2
+ 
+ # Use apenas as libs vindas do pkg-config e bibliotecas extras
+-st_LDADD     = ${FREETYPE2_LIBS} ${FONTCONFIG_LIBS} -lX11 -lutil -lXft -lm -lrt
++st_LDADD     = ${AM_LDFLAGS} -lX11 -lutil -lXft -lm -lrt
+ 
+ # Regra para copiar config.def.h para xconfig.h antes da compilação
+ BUILT_SOURCES = xconfig.h
+-- 
+2.51.0
+
