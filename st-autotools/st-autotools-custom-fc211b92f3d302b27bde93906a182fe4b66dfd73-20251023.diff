@@ -1,0 +1,64 @@
+From fc211b92f3d302b27bde93906a182fe4b66dfd73 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Thu, 23 Oct 2025 17:42:58 -0300
+Subject: [PATCH] custom
+
+---
+ configure.ac    | 15 +++++++--------
+ src/Makefile.am |  7 +++++--
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 160ea67..fcd8559 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -32,16 +32,15 @@ dnl "config.h" -> AUTHOR
+ AC_DEFINE(AUTHOR, ["Ivan Lopes"], [Essa variável aparece no config.h])
+ 
+ dnl ====== bibliotescas ======================================================
+-PKG_PROG_PKG_CONFIG
+-PKG_CHECK_MODULES(FONTCONFIG, [fontconfig])
+-PKG_CHECK_MODULES(FREETYPE2,  [freetype2])
++dnl PKG_PROG_PKG_CONFIG
++dnl PKG_CHECK_MODULES(FONTCONFIG, [fontconfig])
++dnl PKG_CHECK_MODULES(FREETYPE2,  [freetype2])
+ 
+-AC_SUBST(FONTCONFIG_CFLAGS)
+-AC_SUBST(FONTCONFIG_LIBS)
+-AC_SUBST(FREETYPE2_CFLAGS)
+-AC_SUBST(FREETYPE2_LIBS)
++dnl AC_SUBST(FONTCONFIG_CFLAGS)
++dnl AC_SUBST(FONTCONFIG_LIBS)
++dnl AC_SUBST(FREETYPE2_CFLAGS)
++dnl AC_SUBST(FREETYPE2_LIBS)
+ 
+-# Configurações adicionais para wxWidgets
+ #CFLAGS="$CFLAGS ${FREETYPE2_CFLAGS} ${FONTCONFIG_CFLAGS}"
+ #LIBS="$LIBS ${FONTCONFIG_LIBS} ${FREETYPE2_LIBS}"
+ 
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 2b953d6..3fa128d 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -2,13 +2,16 @@ bin_PROGRAMS = st
+ 
+ st_SOURCES   = st.c x.c
+ 
++AM_CPPFLAGS = -I/usr/include/freetype2 -I/usr/include/libpng16
++AM_LDFLAGS  = -L/usr/lib/x86_64-linux-gnu -lfontconfig -lfreetype
++
+ # Use apenas as flags vindas do pkg-config
+ st_CFLAGS    = -I$(top_srcdir) \
+-               ${FREETYPE2_CFLAGS} ${FONTCONFIG_CFLAGS} \
++               ${AM_CPPFLAGS} \
+                -DVERSION=\"$(PACKAGE_VERSION)\" -D_XOPEN_SOURCE=600 -O2
+ 
+ # Use apenas as libs vindas do pkg-config e bibliotecas extras
+-st_LDADD     = ${FREETYPE2_LIBS} ${FONTCONFIG_LIBS} -lX11 -lutil -lXft -lm -lrt
++st_LDADD     = ${AM_LDFLAGS} -lX11 -lutil -lXft -lm -lrt
+ 
+ # Regra para copiar config.def.h para xconfig.h antes da compilação
+ BUILT_SOURCES = xconfig.h
+-- 
+2.51.0
+
