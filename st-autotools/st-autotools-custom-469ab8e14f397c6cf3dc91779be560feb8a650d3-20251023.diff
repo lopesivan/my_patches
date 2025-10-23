@@ -1,0 +1,35 @@
+From 469ab8e14f397c6cf3dc91779be560feb8a650d3 Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Thu, 23 Oct 2025 17:25:34 -0300
+Subject: [PATCH] custom
+
+---
+ src/Makefile.am | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 2b953d6..42ad967 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -2,13 +2,16 @@ bin_PROGRAMS = st
+ 
+ st_SOURCES   = st.c x.c
+ 
++PKG_CONFIG_PATH = /usr/lib/x86_64-linux-gnu/pkgconfig
++AM_CPPFLAGS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) /usr/bin/pkg-config --cflags fontconfig freetype2)
++AM_LDFLAGS  = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) /usr/bin/pkg-config --libs fontconfig freetype2)
+ # Use apenas as flags vindas do pkg-config
+ st_CFLAGS    = -I$(top_srcdir) \
+-               ${FREETYPE2_CFLAGS} ${FONTCONFIG_CFLAGS} \
++               ${AM_CPPFLAGS} \
+                -DVERSION=\"$(PACKAGE_VERSION)\" -D_XOPEN_SOURCE=600 -O2
+ 
+ # Use apenas as libs vindas do pkg-config e bibliotecas extras
+-st_LDADD     = ${FREETYPE2_LIBS} ${FONTCONFIG_LIBS} -lX11 -lutil -lXft -lm -lrt
++st_LDADD     = ${AM_LDFLAGS} -lX11 -lutil -lXft -lm -lrt
+ 
+ # Regra para copiar config.def.h para xconfig.h antes da compilação
+ BUILT_SOURCES = xconfig.h
+-- 
+2.51.0
+
