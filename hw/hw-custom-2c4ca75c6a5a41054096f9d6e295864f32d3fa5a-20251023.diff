@@ -1,0 +1,1044 @@
+From 2c4ca75c6a5a41054096f9d6e295864f32d3fa5a Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Thu, 23 Oct 2025 15:26:36 -0300
+Subject: [PATCH] custom
+
+---
+ LER.md | 1025 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1025 insertions(+)
+ create mode 100644 LER.md
+
+diff --git a/LER.md b/LER.md
+new file mode 100644
+index 0000000..08db8f4
+--- /dev/null
++++ b/LER.md
+@@ -0,0 +1,1025 @@
++# hw
++Quero criar um comando chamado **`hw`** (de *Hello World*), que
++funcione como uma **ferramenta de linha de comando (CLI)**.
++A ideia é simples: ele deve imprimir na tela um exemplo
++de “Hello, World!” na linguagem que eu especificar ou,
++se não houver especificação, na linguagem definida no
++arquivo de configuração.
++
++Por exemplo:
++
++* `hw -c` deve mostrar um exemplo básico em **C**.
++* `hw --cpp` deve mostrar um exemplo básico em **C++**.
++
++O ponto interessante é que o programa será **extensível**:
++ele crescerá à medida que eu adicionar novos exemplos e
++aprender mais linguagens.
++
++Portanto, quero a sua ajuda para definir **qual design** devo
++adotar para implementar esse programa e **em qual linguagem**
++ele deve ser desenvolvido.
++
++
++## Vou te passar um desenho simples, mas robusto, para que o comando seja:
++
++* fácil de usar (flags curtas como `-c`, `--cpp`);
++* fácil de estender (adicionar linguagens sem mexer no código);
++* portátil (funciona em Linux/macOS/Windows);
++* versionável (pode virar um único binário depois).
++
++Abaixo está a proposta + um protótipo funcional.
++
++# Design (simples e flexível)
++
++## 1) Interface de linha de comando
++
++* Uso básico:
++
++  * `hw -c` → imprime “hello world” em C
++  * `hw --cpp` → imprime em C++
++  * `hw --lang rust` ou `hw -l rs` → imprime em Rust
++  * `hw` → usa a linguagem padrão do config
++* Saídas:
++
++  * padrão: imprime no `stdout`
++  * opcional: `--out main.c` grava em arquivo
++* Qualidade de vida:
++
++  * `--list` mostra linguagens disponíveis
++  * `--edit rust` abre o template do Rust no seu editor (opcional, depois)
++
++## 2) Onde ficam os templates
++
++Ordem de busca (para permitir override do usuário):
++
++1. **Templates do usuário**:
++   `~/.local/share/hw/templates/` (Linux)
++   `~/Library/Application Support/hw/templates/` (macOS)
++   `%APPDATA%\hw\templates\` (Windows)
++2. **Templates “embutidos”** no programa (fallback).
++
++Cada template é um arquivo por linguagem, ex.: `c.tmpl`,
++`cpp.tmpl`, `rust.tmpl`.
++
++Exemplos:
++
++* `c.tmpl`
++
++  ```c
++  #include <stdio.h>
++  int main(void) {
++      puts("Hello, World!");
++      return 0;
++  }
++  ```
++* `cpp.tmpl`
++
++  ```cpp
++  #include <iostream>
++  int main() {
++      std::cout << "Hello, World!\n";
++  }
++  ```
++
++## 3) Configuração do usuário
++
++Arquivo TOML, por exemplo:
++
++* Linux: `~/.config/hw/config.toml`
++
++Conteúdo:
++
++```toml
++default_lang = "cpp"
++
++[aliases]
++c = "c"
++cpp = "cpp"
++cc = "cpp"
++rs = "rust"
++```
++
++Regras:
++
++* `default_lang` define a linguagem quando o usuário não passa flag.
++* `[aliases]` mapeia abreviações/flags curtas para nomes de template.
++
++  * Ex.: `-c` → alias “c”; `--cpp` → alias “cpp”.
++* Precedência: flag > alias > default_lang.
++
++## 4) Extensibilidade (sem recompilar)
++
++* Para adicionar uma linguagem nova, o usuário só precisa criar um arquivo `nova.tmpl` na pasta de templates. Pronto.
++* Aliases podem ser adicionados no `config.toml`.
++* Para algo ainda mais avançado no futuro, você pode suportar **plugins executáveis**: se não existir `X.tmpl`, o `hw` tenta executar `hw-X` no PATH e imprime o que ele retornar.
++
++## 5) Linguagem de implementação
++
++* **Python**: ótimo para prototipar rápido (argparse, pathlib, tomllib), fácil de rodar no seu ambiente Linux. Depois você pode “congelar” em um binário com `pyinstaller`.
++* **Go**: excelente para empacotar como um único binário e distribuir; bom segundo passo quando o design estabilizar.
++* **Rust**: muito bom também, mas a curva de início é maior para um utilitário simples.
++
++👉 Sugestão prática: **comece em Python** (ganho imediato) e, quando o conjunto de features estabilizar, **porte para Go** (binário único, zero dependências).
++
++---
++
++# Protótipo funcional (Python 3.11+)
++
++> Salve como `hw` (ou `hw.py`) e dê permissão de execução (`chmod +x hw`).
++> Ele já vem com C e C++ embutidos; lê config/aliases e templates do usuário se existirem.
++
++```python
++#!/usr/bin/env python3
++import argparse
++import os
++import sys
++from pathlib import Path
++
++# --- Util: paths por OS
++def user_config_dir() -> Path:
++    if sys.platform.startswith("linux"):
++        return Path.home() / ".config" / "hw"
++    elif sys.platform == "darwin":
++        return Path.home() / "Library" / "Application Support" / "hw"
++    else:
++        return Path(os.environ.get("APPDATA", str(Path.home()))) / "hw"
++
++def user_data_dir() -> Path:
++    if sys.platform.startswith("linux"):
++        return Path.home() / ".local" / "share" / "hw"
++    elif sys.platform == "darwin":
++        return Path.home() / "Library" / "Application Support" / "hw"
++    else:
++        return Path(os.environ.get("APPDATA", str(Path.home()))) / "hw"
++
++# --- Carregar config TOML (Python 3.11+ tem tomllib)
++def load_config():
++    cfg = {"default_lang": "c", "aliases": {}}
++    cfg_path = user_config_dir() / "config.toml"
++    if cfg_path.exists():
++        try:
++            import tomllib
++            data = tomllib.loads(cfg_path.read_text(encoding="utf-8"))
++            if isinstance(data, dict):
++                cfg.update({k: v for k, v in data.items() if k in ("default_lang", "aliases")})
++                if "aliases" in cfg and cfg["aliases"] is None:
++                    cfg["aliases"] = {}
++        except Exception as e:
++            print(f"[hw] Aviso: falha ao ler {cfg_path}: {e}", file=sys.stderr)
++    return cfg
++
++# --- Templates embutidos (fallback)
++EMBEDDED = {
++    "c": """#include <stdio.h>
++int main(void) {
++    puts("Hello, World!");
++    return 0;
++}
++""",
++    "cpp": """#include <iostream>
++int main() {
++    std::cout << "Hello, World!\\n";
++}
++""",
++    "rust": """fn main() {
++    println!("Hello, World!");
++}
++""",
++    "python": """print("Hello, World!")
++""",
++}
++
++# --- Carregar template de arquivo do usuário, se existir
++def load_user_template(lang: str) -> str | None:
++    # hw/templates/<lang>.tmpl
++    base = user_data_dir() / "templates"
++    candidates = [
++        base / f"{lang}.tmpl",
++        base / f"{lang}.txt",
++    ]
++    for p in candidates:
++        if p.exists():
++            return p.read_text(encoding="utf-8")
++    return None
++
++def resolve_lang(args, cfg):
++    # 1) flag explícita --lang
++    if args.lang:
++        return args.lang
++    # 2) flags curtas do tipo --cpp, -c, etc.: mapeadas por aliases
++    # mapeio a presença de flags booleanas
++    # exemplo: --cpp vira args.cpp = True
++    alias_hit = None
++    for k, v in cfg.get("aliases", {}).items():
++        # se o alias for usado como --<k> (ex.: --cpp), argparse registra True:
++        if getattr(args, k.replace("-", "_"), False):
++            alias_hit = v
++            break
++    if alias_hit:
++        return alias_hit
++    # 3) default do config
++    return cfg.get("default_lang", "c")
++
++def available_languages(cfg):
++    # união de embutidos + templates do usuário
++    langs = set(EMBEDDED.keys())
++    tdir = user_data_dir() / "templates"
++    if tdir.exists():
++        for p in tdir.iterdir():
++            if p.is_file() and p.suffix in (".tmpl", ".txt"):
++                langs.add(p.stem)
++    # aliases também contam como “atalhos”, mas não como linguagem em si
++    return sorted(langs)
++
++def main():
++    cfg = load_config()
++
++    parser = argparse.ArgumentParser(
++        prog="hw",
++        description="Imprime um Hello World na linguagem escolhida."
++    )
++    parser.add_argument("-l", "--lang", help="nome da linguagem (ex.: c, cpp, rust, python)")
++    parser.add_argument("--list", action="store_true", help="lista linguagens disponíveis")
++    parser.add_argument("--out", help="salva a saída em arquivo")
++    # aliases de exemplo: -c e --cpp (você pode aumentar via config.toml)
++    # Dica: mantenha em sincronia com seu config.toml
++    parser.add_argument("-c", dest="c", action="store_true", help="atalho para C (alias)")
++    parser.add_argument("--cpp", dest="cpp", action="store_true", help="atalho para C++ (alias)")
++
++    # também adiciona dinamicamente aliases definidos no config (para flags longas)
++    for alias in cfg.get("aliases", {}).keys():
++        if alias in ("c", "cpp"):  # já adicionados acima
++            continue
++        # cria flags longas: --rs, --zig, etc.
++        parser.add_argument(f"--{alias}", dest=alias.replace("-", "_"), action="store_true",
++                            help=f"atalho para linguagem mapeada em '{alias}' no config")
++
++    args = parser.parse_args()
++
++    if args.list:
++        langs = available_languages(cfg)
++        print("Linguagens disponíveis:")
++        for l in langs:
++            print(f" - {l}")
++        return 0
++
++    lang = resolve_lang(args, cfg)
++
++    # tenta user template primeiro
++    text = load_user_template(lang)
++    if text is None:
++        # cai para embutido
++        text = EMBEDDED.get(lang)
++
++    if text is None:
++        print(f"[hw] ERRO: linguagem '{lang}' não encontrada. Use --list para ver opções.", file=sys.stderr)
++        return 1
++
++    if args.out:
++        Path(args.out).write_text(text, encoding="utf-8")
++        # mensagem simples para UX
++        print(f"[hw] Arquivo gerado: {args.out}")
++    else:
++        print(text, end="")
++
++    return 0
++
++if __name__ == "__main__":
++    sys.exit(main())
++```
++
++## Config e templates do usuário (exemplos)
++
++1. Crie `~/.config/hw/config.toml`:
++
++```toml
++default_lang = "cpp"
++
++[aliases]
++c = "c"
++cpp = "cpp"
++rs = "rust"
++py = "python"
++```
++
++2. Crie `~/.local/share/hw/templates/rust.tmpl` (Linux):
++
++```rust
++fn main() {
++    println!("Hello, World!");
++}
++```
++
++Agora:
++
++* `hw` → C++ (porque `default_lang = "cpp"`)
++* `hw -c` → C
++* `hw --cpp` → C++
++* `hw --rs` → Rust (via alias → “rust”)
++* `hw --lang python` → Python
++* `hw --list` → lista tudo que está embutido + seus arquivos `.tmpl`.
++
++---
++
++# Caminho de evolução
++
++* **Autocompletar** (bash/zsh/fish) para `--lang` e aliases.
++* **`--edit <lang>`**: abre o template no editor padrão (`$EDITOR`).
++* **Plugins executáveis**: se não achar template, tenta `hw-<lang>` no PATH.
++* **Go (Cobra/Viper)** ou **Rust (clap + confy)** quando quiser empacotar binário único.
++* **Testes**: testar resolução de ordem (flag > alias > default) e fallback dos templates.
++
++Bem simples. No design que te propus, **não precisa recompilar**: basta criar um **template** e (opcional) um **alias** no config.
++
++## Passo-a-passo (Linux/macOS/Windows)
++
++### 1) Crie o template da nova linguagem
++
++Coloque um arquivo `NOME.tmpl` na pasta de templates do usuário:
++
++* Linux: `~/.local/share/hw/templates/`
++* macOS: `~/Library/Application Support/hw/templates/`
++* Windows: `%APPDATA%\hw\templates\`
++
++Exemplos (Linux):
++
++```bash
++mkdir -p ~/.local/share/hw/templates
++nano ~/.local/share/hw/templates/zig.tmpl
++```
++
++Conteúdo (ex.: Zig):
++
++```zig
++const std = @import("std");
++pub fn main() void {
++    std.debug.print("Hello, World!\n", .{});
++}
++```
++
++Mais exemplos prontos que você pode copiar para `*.tmpl`:
++
++* **Go** (`go.tmpl`)
++
++  ```go
++  package main
++  import "fmt"
++  func main() { fmt.Println("Hello, World!") }
++  ```
++* **Haskell** (`hs.tmpl`)
++
++  ```haskell
++  main :: IO ()
++  main = putStrLn "Hello, World!"
++  ```
++* **Java** (`java.tmpl`)
++
++  ```java
++  public class Main {
++      public static void main(String[] args) {
++          System.out.println("Hello, World!");
++      }
++  }
++  ```
++
++> Dica: o nome do arquivo (ex.: `zig.tmpl`) é o **nome da linguagem** que você passará em `--lang zig`.
++
++### 2) (Opcional) Adicione um alias no config
++
++Se quiser um atalho tipo `--zig` ou `-z`, edite seu `config.toml`:
++
++* Linux: `~/.config/hw/config.toml`
++* macOS: `~/Library/Application Support/hw/config.toml`
++* Windows: `%APPDATA%\hw\config.toml`
++
++```toml
++# exemplo
++[aliases]
++z = "zig"     # habilita -z
++zig = "zig"   # habilita --zig
++```
++
++> Você também pode ajustar `default_lang = "zig"` se quiser que `hw` (sem flags) gere Zig.
++
++### 3) Use!
++
++* Listar linguagens disponíveis (templates do usuário + embutidos):
++
++  ```bash
++  hw --list
++  ```
++* Usar por nome:
++
++  ```bash
++  hw --lang zig
++  ```
++* Usar por alias:
++
++  ```bash
++  hw -z
++  hw --zig
++  ```
++* Salvar em arquivo:
++
++  ```bash
++  hw --lang zig --out main.zig
++  ```
++
++## Como funciona a resolução
++
++1. `--lang X` (se você passar)
++2. Alias usado (`-z`, `--zig`, etc.) → mapeia para o nome real no `[aliases]`
++3. `default_lang` do `config.toml`
++4. Fallback: templates embutidos (C, C++, Rust, Python)
++
++## Dúvidas comuns
++
++* **Posso chamar o template de outro nome?** Sim, o nome do arquivo `.tmpl` é o que você usará em `--lang`.
++* **Precisa ser `.tmpl`?** O protótipo aceita `.tmpl` ou `.txt`.
++* **Quero embutir definitivamente (sem arquivo externo).** Aí edite o dicionário `EMBEDDED` no script e adicione a chave/valor da nova linguagem.
++
++Se quiser, te mando um pacote inicial de templates (Zig, Go, Haskell, Java, Kotlin, Lua) já formatadinhos para colar na pasta.
++
++Perfeito! Abaixo vai uma **versão C++17** de `hw` (um único arquivo) que:
++
++* lê um **config.ini** simples (`default_lang` e uma seção `[aliases]`);
++* procura **templates** do usuário (sem recompilar) em `templates/`;
++* tem **templates embutidos** (C, C++, Rust, Python) como fallback;
++* aceita `--lang/-l`, `--list`, `--out` e **aliases** como `-c`, `--cpp`, ou os que você colocar no config.
++
++Compile com `g++ -std=c++17 -O2 -Wall -Wextra hw.cpp -o hw` (Linux/macOS) ou `cl /std:c++17 hw.cpp` (Windows).
++
++---
++
++### `hw.cpp` (C++17, single-file)
++
++```cpp
++// hw.cpp - C++17 CLI "hello world" templates
++// Build: g++ -std=c++17 -O2 -Wall -Wextra hw.cpp -o hw
++// Windows (MSVC): cl /std:c++17 hw.cpp
++
++#include <algorithm>
++#include <cctype>
++#include <cstdlib>
++#include <fstream>
++#include <iostream>
++#include <map>
++#include <sstream>
++#include <string>
++#include <unordered_map>
++#include <vector>
++#include <filesystem>
++
++namespace fs = std::filesystem;
++
++// -------------------- util: trim/startsWith --------------------
++static inline std::string ltrim(std::string s) {
++    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch){ return !std::isspace(ch); }));
++    return s;
++}
++static inline std::string rtrim(std::string s) {
++    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch){ return !std::isspace(ch); }).base(), s.end());
++    return s;
++}
++static inline std::string trim(std::string s) { return rtrim(ltrim(std::move(s))); }
++static inline bool starts_with(const std::string& s, const std::string& pref) {
++    return s.size() >= pref.size() && std::equal(pref.begin(), pref.end(), s.begin());
++}
++static inline std::string to_lower(std::string s){
++    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
++    return s;
++}
++
++// -------------------- OS-specific dirs --------------------
++static fs::path user_config_dir() {
++#ifdef _WIN32
++    const char* app = std::getenv("APPDATA");
++    if (app && *app) return fs::path(app) / "hw";
++    return fs::path(std::getenv("USERPROFILE") ? std::getenv("USERPROFILE") : "") / "AppData" / "Roaming" / "hw";
++#elif __APPLE__
++    return fs::path(std::getenv("HOME") ? std::getenv("HOME") : "") / "Library" / "Application Support" / "hw";
++#else
++    return fs::path(std::getenv("HOME") ? std::getenv("HOME") : "") / ".config" / "hw";
++#endif
++}
++static fs::path user_data_dir() {
++#ifdef _WIN32
++    const char* app = std::getenv("APPDATA");
++    if (app && *app) return fs::path(app) / "hw";
++    return fs::path(std::getenv("USERPROFILE") ? std::getenv("USERPROFILE") : "") / "AppData" / "Roaming" / "hw";
++#elif __APPLE__
++    return fs::path(std::getenv("HOME") ? std::getenv("HOME") : "") / "Library" / "Application Support" / "hw";
++#else
++    return fs::path(std::getenv("HOME") ? std::getenv("HOME") : "") / ".local" / "share" / "hw";
++#endif
++}
++
++// -------------------- read/write helpers --------------------
++static bool read_file(const fs::path& p, std::string& out) {
++    std::ifstream ifs(p, std::ios::binary);
++    if (!ifs) return false;
++    std::ostringstream oss;
++    oss << ifs.rdbuf();
++    out = oss.str();
++    return true;
++}
++static bool write_file(const fs::path& p, const std::string& txt) {
++    std::ofstream ofs(p, std::ios::binary);
++    if (!ofs) return false;
++    ofs << txt;
++    return true;
++}
++
++// -------------------- config (INI minimal) --------------------
++// Formato aceito:
++// default_lang = cpp
++//
++// [aliases]
++// c = c
++// cpp = cpp
++// rs = rust
++struct Config {
++    std::string default_lang = "c";
++    std::unordered_map<std::string, std::string> aliases; // alias -> language
++};
++
++static Config load_config() {
++    Config cfg;
++    fs::path cfgPath = user_config_dir() / "config.ini";
++    std::ifstream in(cfgPath);
++    if (!in) {
++        // ok — config é opcional
++        return cfg;
++    }
++    std::string line;
++    std::string section;
++    while (std::getline(in, line)) {
++        std::string raw = trim(line);
++        if (raw.empty() || raw[0] == '#' || raw[0] == ';') continue;
++
++        if (raw.front() == '[' && raw.back() == ']') {
++            section = to_lower(raw.substr(1, raw.size()-2));
++            continue;
++        }
++
++        auto pos = raw.find('=');
++        if (pos == std::string::npos) continue;
++        std::string key = to_lower(trim(raw.substr(0, pos)));
++        std::string val = trim(raw.substr(pos+1));
++
++        // remove aspas se houver
++        if (!val.empty() && (val.front()=='"' || val.front()=='\'')) {
++            char q = val.front();
++            if (val.back()==q && val.size()>=2) val = val.substr(1, val.size()-2);
++        }
++
++        if (section.empty()) {
++            if (key == "default_lang" && !val.empty()) {
++                cfg.default_lang = val;
++            }
++        } else if (section == "aliases") {
++            if (!key.empty() && !val.empty()) {
++                cfg.aliases[key] = val;
++            }
++        }
++    }
++    return cfg;
++}
++
++// -------------------- embedded templates --------------------
++static const std::unordered_map<std::string, std::string> EMBEDDED = {
++    {"c",
++R"(#include <stdio.h>
++int main(void) {
++    puts("Hello, World!");
++    return 0;
++}
++)"},
++    {"cpp",
++R"(#include <iostream>
++int main() {
++    std::cout << "Hello, World!\n";
++}
++)"},
++    {"rust",
++R"(fn main() {
++    println!("Hello, World!");
++}
++)"},
++    {"python",
++R"(print("Hello, World!")
++)"},
++};
++
++// -------------------- template discovery --------------------
++static std::vector<std::string> list_languages() {
++    std::vector<std::string> langs;
++    // embedded
++    for (auto& kv : EMBEDDED) langs.push_back(kv.first);
++
++    // user templates
++    fs::path tdir = user_data_dir() / "templates";
++    if (fs::exists(tdir) && fs::is_directory(tdir)) {
++        for (auto& e : fs::directory_iterator(tdir)) {
++            if (!e.is_regular_file()) continue;
++            auto p = e.path();
++            auto ext = to_lower(p.extension().string());
++            if (ext == ".tmpl" || ext == ".txt") {
++                langs.push_back(p.stem().string());
++            }
++        }
++    }
++    std::sort(langs.begin(), langs.end());
++    langs.erase(std::unique(langs.begin(), langs.end()), langs.end());
++    return langs;
++}
++
++static bool load_user_template(const std::string& lang, std::string& out) {
++    fs::path base = user_data_dir() / "templates";
++    std::vector<fs::path> candidates = {
++        base / (lang + ".tmpl"),
++        base / (lang + ".txt")
++    };
++    for (auto& p : candidates) {
++        if (fs::exists(p) && fs::is_regular_file(p)) {
++            return read_file(p, out);
++        }
++    }
++    return false;
++}
++
++// -------------------- arg parsing --------------------
++struct Args {
++    bool show_list = false;
++    std::string lang;      // --lang / -l
++    std::string out_path;  // --out
++    std::string alias_hit; // resolved via alias flags (-c, --cpp, --zig, etc.)
++};
++
++static void print_help(const char* prog, const Config& cfg) {
++    std::cout
++        << "Usage: " << prog << " [options]\n\n"
++        << "Options:\n"
++        << "  -l, --lang <name>   Linguagem (ex.: c, cpp, rust, python)\n"
++        << "      --list          Lista linguagens disponíveis\n"
++        << "      --out <file>    Salva a saída em arquivo\n"
++        << "  -c                  Atalho para C (alias embutido)\n"
++        << "      --cpp           Atalho para C++ (alias embutido)\n"
++        << "\nAliases do config.ini ([aliases]):\n";
++    if (cfg.aliases.empty()) {
++        std::cout << "  (nenhum alias definido)\n";
++    } else {
++        for (auto& kv : cfg.aliases) {
++            std::cout << "  --" << kv.first;
++            if (kv.first.size() == 1) std::cout << "  (ou -"<< kv.first << ")";
++            std::cout << "  -> " << kv.second << "\n";
++        }
++    }
++    std::cout << "\nConfig e templates:\n"
++#ifdef _WIN32
++              << "  Config:    %APPDATA%\\hw\\config.ini\n"
++              << "  Templates: %APPDATA%\\hw\\templates\\<lang>.tmpl\n";
++#elif __APPLE__
++              << "  Config:    ~/Library/Application Support/hw/config.ini\n"
++              << "  Templates: ~/Library/Application Support/hw/templates/<lang>.tmpl\n";
++#else
++              << "  Config:    ~/.config/hw/config.ini\n"
++              << "  Templates: ~/.local/share/hw/templates/<lang>.tmpl\n";
++#endif
++}
++
++static Args parse_args(int argc, char** argv, const Config& cfg) {
++    Args a;
++    // para resolver aliases, percorremos argv manualmente
++    for (int i = 1; i < argc; ++i) {
++        std::string tok = argv[i];
++
++        if (tok == "-h" || tok == "--help") {
++            print_help(argv[0], cfg);
++            std::exit(0);
++        } else if (tok == "--list") {
++            a.show_list = true;
++        } else if (tok == "-l" || tok == "--lang") {
++            if (i+1 >= argc) { std::cerr << "[hw] Faltou argumento para " << tok << "\n"; std::exit(1); }
++            a.lang = argv[++i];
++        } else if (tok == "--out") {
++            if (i+1 >= argc) { std::cerr << "[hw] Faltou argumento para --out\n"; std::exit(1); }
++            a.out_path = argv[++i];
++        }
++        // aliases embutidos:
++        else if (tok == "-c") {
++            a.alias_hit = "c";
++        } else if (tok == "--cpp") {
++            a.alias_hit = "cpp";
++        }
++        // aliases definidos no config:
++        else if (starts_with(tok, "--")) {
++            std::string name = tok.substr(2); // após --
++            auto it = cfg.aliases.find(name);
++            if (it != cfg.aliases.end()) a.alias_hit = it->second;
++        } else if (starts_with(tok, "-") && tok.size() == 2) {
++            // flag curta: -z
++            std::string name(1, tok[1]);
++            auto it = cfg.aliases.find(name);
++            if (it != cfg.aliases.end()) a.alias_hit = it->second;
++        } else {
++            // ignorar argumentos posicionais
++        }
++    }
++    return a;
++}
++
++// -------------------- main --------------------
++int main(int argc, char** argv) {
++    Config cfg = load_config();
++    Args args = parse_args(argc, argv, cfg);
++
++    if (args.show_list) {
++        auto langs = list_languages();
++        std::cout << "Linguagens disponíveis:\n";
++        for (auto& l : langs) std::cout << " - " << l << "\n";
++        return 0;
++    }
++
++    // Resolução de linguagem: --lang > alias > default_lang
++    std::string lang;
++    if (!args.lang.empty()) lang = args.lang;
++    else if (!args.alias_hit.empty()) lang = args.alias_hit;
++    else lang = cfg.default_lang.empty() ? "c" : cfg.default_lang;
++
++    // tenta template do usuário
++    std::string text;
++    if (!load_user_template(lang, text)) {
++        auto it = EMBEDDED.find(lang);
++        if (it == EMBEDDED.end()) {
++            std::cerr << "[hw] ERRO: linguagem '" << lang
++                      << "' não encontrada. Use --list para ver opções.\n";
++            return 1;
++        }
++        text = it->second;
++    }
++
++    if (!args.out_path.empty()) {
++        if (!write_file(args.out_path, text)) {
++            std::cerr << "[hw] ERRO: não consegui escrever em '" << args.out_path << "'\n";
++            return 1;
++        }
++        std::cout << "[hw] Arquivo gerado: " << args.out_path << "\n";
++    } else {
++        std::cout << text;
++    }
++
++    return 0;
++}
++```
++
++---
++
++## Onde colocar config e templates
++
++* **Linux**
++
++  * Config: `~/.config/hw/config.ini`
++  * Templates: `~/.local/share/hw/templates/<linguagem>.tmpl`
++* **macOS**
++
++  * Config: `~/Library/Application Support/hw/config.ini`
++  * Templates: `~/Library/Application Support/hw/templates/<linguagem>.tmpl`
++* **Windows**
++
++  * Config: `%APPDATA%\hw\config.ini`
++  * Templates: `%APPDATA%\hw\templates\<linguagem>.tmpl`
++
++### Exemplo de `config.ini`
++
++```ini
++default_lang = cpp
++
++[aliases]
++c = c        ; habilita -c e --c
++cpp = cpp    ; habilita --cpp
++rs = rust    ; habilita -r / --rs
++zig = zig    ; habilita --zig
++z = zig      ; habilita -z
++```
++
++### Exemplos de templates do usuário
++
++`~/.local/share/hw/templates/zig.tmpl`
++
++```zig
++const std = @import("std");
++pub fn main() void { std.debug.print("Hello, World!\n", .{}); }
++```
++
++`~/.local/share/hw/templates/java.tmpl`
++
++```java
++public class Main {
++    public static void main(String[] args) {
++        System.out.println("Hello, World!");
++    }
++}
++```
++
++---
++
++## Como usar
++
++```bash
++# listar linguagens (embutidas + suas .tmpl/.txt)
++./hw --list
++
++# sair no stdout (usa default_lang se nada passado)
++./hw
++
++# escolher linguagem
++./hw --lang rust
++./hw -l python
++
++# usar aliases
++./hw -c
++./hw --cpp
++./hw -z        # se z=zig no [aliases]
++
++# gravar em arquivo
++./hw --lang cpp --out main.cpp
++```
++
++---
++
++## Por que esse design em C++17?
++
++* **Sem dependências externas** (parserzinho INI próprio).
++* **Extensível**: novos templates são só arquivos; novos atalhos, só editar o INI.
++* **Portável**: usa `std::filesystem` para caminhos.
++* **Evolutivo**: se quiser futuramente ler TOML de verdade, é só trocar o loader por toml++/cpptoml.
++
++Se quiser, eu te mando uma variação usando **cxxopts** para parsing de opções (fica mais “ergonômico”), ou uma versão com **toml++** para suportar TOML completo.
++
++Perfeito — adaptei o `hw.cpp` para aceitar **aliases curtos com múltiplas letras** (ex.: `-py`, `-pl`, `-rs`). A lógica agora interpreta qualquer token que comece por `-` (um hífen só) como um **alias textual inteiro** após o hífen.
++
++Abaixo estão apenas as **partes que você precisa substituir** no arquivo que te enviei. (Se preferir, posso colar o arquivo completo já atualizado.)
++
++---
++
++# 1) Ajuda (atualize `print_help`)
++
++Substitua a função `print_help` pela versão abaixo (apenas o texto mudou para documentar `-py`, `-pl`, etc.):
++
++```cpp
++static void print_help(const char* prog, const Config& cfg) {
++    std::cout
++        << "Usage: " << prog << " [options]\n\n"
++        << "Options:\n"
++        << "  -l, --lang <name>   Linguagem (ex.: c, cpp, rust, python)\n"
++        << "      --list          Lista linguagens disponíveis\n"
++        << "      --out <file>    Salva a saída em arquivo\n"
++        << "\nAtalhos:\n"
++        << "  -c                  Atalho embutido para C\n"
++        << "      --cpp           Atalho embutido para C++\n"
++        << "  -<alias>            Alias curto de várias letras, ex.: -py, -pl, -rs\n"
++        << "  --<alias>           Alias longo, ex.: --python, --perl\n"
++        << "\nAliases do config.ini ([aliases]):\n";
++    if (cfg.aliases.empty()) {
++        std::cout << "  (nenhum alias definido)\n";
++    } else {
++        for (auto& kv : cfg.aliases) {
++            std::cout << "  " << kv.first << " -> " << kv.second << "\n";
++        }
++    }
++    std::cout << "\nConfig e templates:\n"
++#ifdef _WIN32
++              << "  Config:    %APPDATA%\\hw\\config.ini\n"
++              << "  Templates: %APPDATA%\\hw\\templates\\<lang>.tmpl\n";
++#elif __APPLE__
++              << "  Config:    ~/Library/Application Support/hw/config.ini\n"
++              << "  Templates: ~/Library/Application Support/hw/templates/<lang>.tmpl\n";
++#else
++              << "  Config:    ~/.config/hw/config.ini\n"
++              << "  Templates: ~/.local/share/hw/templates/<lang>.tmpl\n";
++#endif
++}
++```
++
++---
++
++# 2) Parser de argumentos (substitua `parse_args`)
++
++Esta versão mantém compatibilidade com `-c`, `--cpp`, `--lang`, etc., e **adiciona** suporte a `-py`, `-pl`, `-rs`… mapeados pelo `[aliases]` do `config.ini`.
++
++```cpp
++static Args parse_args(int argc, char** argv, const Config& cfg) {
++    Args a;
++
++    for (int i = 1; i < argc; ++i) {
++        std::string tok = argv[i];
++
++        if (tok == "-h" || tok == "--help") {
++            print_help(argv[0], cfg);
++            std::exit(0);
++        } else if (tok == "--list") {
++            a.show_list = true;
++        } else if (tok == "-l" || tok == "--lang") {
++            if (i+1 >= argc) { std::cerr << "[hw] Faltou argumento para " << tok << "\n"; std::exit(1); }
++            a.lang = argv[++i];
++        } else if (tok == "--out") {
++            if (i+1 >= argc) { std::cerr << "[hw] Faltou argumento para --out\n"; std::exit(1); }
++            a.out_path = argv[++i];
++        }
++        // ---- aliases embutidos (compat) ----
++        else if (tok == "-c") {
++            a.alias_hit = "c";          // atalho embutido
++        } else if (tok == "--cpp") {
++            a.alias_hit = "cpp";        // atalho embutido
++        }
++        // ---- aliases do config: forma longa --<alias> ----
++        else if (starts_with(tok, "--") && tok.size() > 2) {
++            std::string name = tok.substr(2); // tudo após --
++            auto it = cfg.aliases.find(name);
++            if (it != cfg.aliases.end()) {
++                a.alias_hit = it->second;
++            } else {
++                // desconhecido: ignore silenciosamente (ou emita aviso se preferir)
++            }
++        }
++        // ---- aliases do config: forma curta multi-letras -<alias> ----
++        // Nota: aqui consideramos o token inteiro após o hífen como o alias textual.
++        // Exemplos: -py -> "py", -pl -> "pl", -rs -> "rs".
++        else if (starts_with(tok, "-") && tok.size() > 1 && tok[1] != '-') {
++            std::string name = tok.substr(1); // tudo após o 1º '-'
++            // Caso especial: se for apenas "l", não tratamos aqui (pois -l já foi pego acima).
++            if (name != "l") {
++                auto it = cfg.aliases.find(name);
++                if (it != cfg.aliases.end()) {
++                    a.alias_hit = it->second;
++                } else {
++                    // Se quiser, trate combinações POSIX (-abc) aqui, mas neste app
++                    // adotamos a convenção: '-<alias textual>' inteiro (sem combinações).
++                }
++            }
++        }
++        // argumentos posicionais: ignorar
++    }
++    return a;
++}
++```
++
++**Observação importante:** optamos por **não** suportar a semântica POSIX de “combinar várias flags de uma letra” (tipo `-abc` = `-a -b -c`). Em vez disso, **tratamos o que vier após um único hífen como um alias textual inteiro**. Assim, `-py` é um alias único (Python), e não `-p` + `-y`.
++
++---
++
++# 3) Como configurar os aliases multi-letra
++
++No seu `config.ini` (Linux: `~/.config/hw/config.ini`), adicione:
++
++```ini
++default_lang = cpp
++
++[aliases]
++# curtos multi-letra:
++py = python
++pl = perl
++rs = rust
++
++# longos:
++python = python
++perl = perl
++rust = rust
++
++# se quiser manter o clássico:
++c = c
++cpp = cpp
++```
++
++Agora você pode executar:
++
++```bash
++# flags longas:
++hw --python
++hw --perl
++
++# flags curtas multi-letra:
++hw -py
++hw -pl
++hw -rs
++
++# embutidos de compat:
++hw -c
++hw --cpp
++
++# escolha explícita:
++hw --lang python
++
++# salvar em arquivo
++hw -py --out main.py
++```
++
++---
++
++## Dica opcional: aviso de duplicatas
++
++Se quiser, dá pra varrer `cfg.aliases` no `main` e emitir um aviso caso o mesmo alias mapeie para linguagens diferentes (ou entre em conflito com `-c`/`--cpp`). Posso te mostrar um snippet para isso depois.
++
++Se quiser o **`hw.cpp` completo** já com essas mudanças coladas, eu já te entrego inteiro numa mensagem só.
++
+-- 
+2.51.0
+
