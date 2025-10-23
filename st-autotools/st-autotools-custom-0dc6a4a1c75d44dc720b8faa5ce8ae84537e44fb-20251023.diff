@@ -1,0 +1,24 @@
+From 0dc6a4a1c75d44dc720b8faa5ce8ae84537e44fb Mon Sep 17 00:00:00 2001
+From: Ivan Lopes <lopesivan.ufrj@gmail.com>
+Date: Thu, 23 Oct 2025 17:09:14 -0300
+Subject: [PATCH] custom
+
+---
+ README.md | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/README.md b/README.md
+index 0a94436..14aead5 100644
+--- a/README.md
++++ b/README.md
+@@ -169,3 +169,7 @@ AC_ARG_WITH([openssl],
+ ### Aplicação Típica:
+ - Use `--disable-*` para funcionalidades que podem ser removidas.
+ - Use `--with-*` para integrações com bibliotecas externas ou caminhos personalizados.
++
++
++
++.............
+-- 
+2.51.0
+
